@@ -14,16 +14,16 @@ class IRC:
 
     def connect(self, server, channel, botnick):
         #defines the socket
-        print "connecting to:"+server
+        print("connecting to: "+server)
         self.irc.connect((server, 6666))                                                         #connects to the server
-        self.irc.send(bytes("USER " + botnick + " " + botnick +" " + botnick + " :This is a fun bot!n")) #user authentication
-        self.irc.send(bytes("NICK " + botnick + "n"))               
-        self.irc.send(bytes("JOIN " + channel + "n"))        #join the chan
+        self.irc.send(bytes("USER " + botnick + " " + botnick +" " + botnick + " :This is a fun bot!n", encoding="utf8")) #user authentication
+        self.irc.send(bytes("NICK " + botnick + "n", encoding="utf8"))
+        self.irc.send(bytes("JOIN " + channel + "n", encoding="utf8"))
 
     def get_text(self):
         text=self.irc.recv(2048).decode("UTF-8")  #receive the text
 
         if text.find('PING') != -1:                      
-            self.irc.send(bytes('PONG ' + text.split() [1] + 'rn')) 
+            self.irc.send(bytes('PONG ' + text.split() [1] + 'rn'), encoding="utf8") 
 
         return text

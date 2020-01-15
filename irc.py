@@ -2,7 +2,7 @@ from irc_class import *
 import os 
 import random
 
-channel = "#07Wonderland"
+channel = "#07thWonderland"
 server = "irc.swiftirc.net"
 nickname = "Ryukishi07"
 
