@@ -4,6 +4,7 @@ import ssl
 import time
 import asyncio
 import configparser
+import disco
 
 config = configparser.ConfigParser()
 config.read('config.ini')
