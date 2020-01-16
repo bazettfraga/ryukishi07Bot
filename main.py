@@ -1,24 +1,18 @@
-import discord
-import asyncio
+import irchan
+import disco
+from multiprocessing import Process
 import configparser
 
-client = discord.Client()
 config = configparser.ConfigParser()
-config.read('config.ini')
-botToken = config['DISCORD']['botToken']
+config.read("config.ini")
 
-@client.event
-async def on_ready():
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
+botToken = config["DISCORD"]["botToken"]
 
+p1 = Process(target=disco.client.run, args=(botToken,))
+p2 = Process(target=irchan.main)
+p1.start()
+p2.start()
 
 
-
-#@client.event
-#async def on_message(message):
-
-
-client.run(botToken)
+while 2:
+    pass
