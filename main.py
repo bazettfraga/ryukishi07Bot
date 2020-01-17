@@ -1,9 +1,10 @@
 import irchan
 import disco
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 import configparser
 
 config = configparser.ConfigParser()
+
 config.read("config.ini")
 
 botToken = config["DISCORD"]["botToken"]

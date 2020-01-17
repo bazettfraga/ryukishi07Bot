@@ -3,7 +3,7 @@ import asyncio
 import configparser
 #import irchan
 import sys
-from irchan import irc
+from irchan import *
 
 client = discord.Client()
 config = configparser.ConfigParser()
@@ -18,12 +18,12 @@ async def on_ready():
     print(client.user.id)
     print('------')
 
-dicks = 0
+def get_channels():
+    return 0
 
 async def cocks():
-    dicks = 1
     print("ochin")
-    irc.send(bytes("NAMES", encoding="UTF8"))
+    TestBot.disco_command("e")
 
 @client.event
 async def on_message(message):
