@@ -15,16 +15,23 @@ config.read("config.ini")
 botToken = config["DISCORD"]["botToken"]
 
 class TestBot(irc.bot.SingleServerIRCBot):
-    def __init__(self, channel, nickname, server, port=6667):
+    def __init__(self, channel, nickname, server, port, qq):
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         self.channel = channel
-        print(str(self))
+        #print(str(self))
 
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
 
     def on_welcome(self, c, e):
         c.join(self.channel)
+    
+    def on_join(self, c, e):
+        print("Twatty cakes")
+        qq.put()
+
+    def on_quit(self, c, e):
+        print("Cuntzilla")
 
     def on_privmsg(self, c, e):
         self.do_command(e, e.arguments[0])
@@ -59,12 +66,11 @@ class TestBot(irc.bot.SingleServerIRCBot):
     def get_channel(self):
         for chname, chobj in self.channels.items():
             self.users = sorted(chobj.users())
-    
-    def disco_command(q_in):
-        q_in.get_nowait()
+
+    def disco_command():
         pass
     
-    def do_command(self, e, cmd, q_out):
+    def do_command(self, e, cmd):
         nick = e.source.nick
         c = self.connection
         print(str(self))
@@ -77,7 +83,6 @@ class TestBot(irc.bot.SingleServerIRCBot):
                 #c.notice(nick, "--- Channel statistics ---")
                 #c.notice(nick, "Channel: " + chname)
                 users = sorted(chobj.users())
-                q_out.put_nowait(users)
                 c.notice(nick, "Users: " + ", ".join(users))
                 print(repr(users))
                 opers = sorted(chobj.opers()) #if rena cares
@@ -97,7 +102,7 @@ class TestBot(irc.bot.SingleServerIRCBot):
             c.notice(nick, "Not understood: " + cmd)
 
 
-def ircmain():
+def ircmain(qhue):
     import sys
 
     #if len(sys.argv) != 4:
@@ -114,8 +119,8 @@ def ircmain():
         sys.exit(1)
     channel = config["IRC"]["channel"]
     nickname = config["IRC"]["nick"]            
-
-    bot = TestBot(channel, nickname, server, port)
+    
+    bot = TestBot(channel, nickname, server, port, qhue)
     bot.start()
 
 @client.event
@@ -140,14 +145,13 @@ async def on_message(message):
         await client.send_message(message.channel, "pong")
         await cocks()
 
-
-
-q = Queue()
-p1 = Process(target=client.run, args=(botToken,q))
-p2 = Process(target=ircmain, args=(q,)
+q = Queue() #HURRRRR XD
+p1 = Process(target=client.run, args=(botToken,))
+p2 = Process(target=ircmain, args=(q,))
 p1.start()
 p2.start()
 
+print(q.get())
 
 while 2:
     pass
