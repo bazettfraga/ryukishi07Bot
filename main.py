@@ -2,7 +2,7 @@
 #import disco
 import discord
 import asyncio
-from multiprocessing import Process, Manager
+from multiprocessing import Process, Manager, Queue
 import configparser
 import irc.bot
 import irc.strings
@@ -60,10 +60,11 @@ class TestBot(irc.bot.SingleServerIRCBot):
         for chname, chobj in self.channels.items():
             self.users = sorted(chobj.users())
     
-    def disco_command(self):
-        return self.users
-
-    def do_command(self, e, cmd):
+    def disco_command(q_in):
+        q_in.get_nowait()
+        pass
+    
+    def do_command(self, e, cmd, q_out):
         nick = e.source.nick
         c = self.connection
         print(str(self))
@@ -76,6 +77,7 @@ class TestBot(irc.bot.SingleServerIRCBot):
                 #c.notice(nick, "--- Channel statistics ---")
                 #c.notice(nick, "Channel: " + chname)
                 users = sorted(chobj.users())
+                q_out.put_nowait(users)
                 c.notice(nick, "Users: " + ", ".join(users))
                 print(repr(users))
                 opers = sorted(chobj.opers()) #if rena cares
@@ -138,8 +140,11 @@ async def on_message(message):
         await client.send_message(message.channel, "pong")
         await cocks()
 
-p1 = Process(target=client.run, args=(botToken,))
-p2 = Process(target=ircmain)
+
+
+q = Queue()
+p1 = Process(target=client.run, args=(botToken,q))
+p2 = Process(target=ircmain, args=(q,)
 p1.start()
 p2.start()
 
