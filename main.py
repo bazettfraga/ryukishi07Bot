@@ -8,6 +8,7 @@ import irc.bot
 import irc.strings
 from irc.client import ip_numstr_to_quad, ip_quad_to_numstr
 import sys
+import time
 
 client = discord.Client()
 config = configparser.ConfigParser()
@@ -18,6 +19,7 @@ class TestBot(irc.bot.SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port, qq):
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
         self.channel = channel
+        self.qq = qq
         #print(str(self))
 
     def on_nicknameinuse(self, c, e):
@@ -25,13 +27,18 @@ class TestBot(irc.bot.SingleServerIRCBot):
 
     def on_welcome(self, c, e):
         c.join(self.channel)
-    
+
     def on_join(self, c, e):
         print("Twatty cakes")
-        qq.put()
+        for chname, chobj in self.channels.items():
+            users = sorted(chobj.users())
+            self.qq.put(users)
 
     def on_quit(self, c, e):
         print("Cuntzilla")
+        for chname, chobj in self.channels.items():
+            users = sorted(chobj.users())
+            self.qq.put(users)
 
     def on_privmsg(self, c, e):
         self.do_command(e, e.arguments[0])
@@ -39,6 +46,9 @@ class TestBot(irc.bot.SingleServerIRCBot):
         print(str(e.arguments[0]))
 
     def on_pubmsg(self, c, e):
+        for chname, chobj in self.channels.items():
+            users = sorted(chobj.users())
+            self.qq.put(users)
         a = e.arguments[0].split(":", 1)
         if len(a) > 1 and irc.strings.lower(a[0]) == irc.strings.lower(
             self.connection.get_nickname()
@@ -63,13 +73,6 @@ class TestBot(irc.bot.SingleServerIRCBot):
                 return
             self.dcc_connect(address, port)
 
-    def get_channel(self):
-        for chname, chobj in self.channels.items():
-            self.users = sorted(chobj.users())
-
-    def disco_command():
-        pass
-    
     def do_command(self, e, cmd):
         nick = e.source.nick
         c = self.connection
@@ -123,35 +126,48 @@ def ircmain(qhue):
     bot = TestBot(channel, nickname, server, port, qhue)
     bot.start()
 
-@client.event
-async def on_ready():
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
+def shootme(botToken,q):
+    global users
+    global holder
+    @client.event
+    async def on_ready():
+        print('Logged in as')
+        print(client.user.name)
+        print(client.user.id)
+        print('------')
+        
 
-nick = "asdf"
+    async def getUsers():
+        if q.empty():
+            print("FUCK YOU, NIGGER")
+            return users
+        else:
+            print("FUCK MY ASS")
+            users  = q.get_nowait()
+            while users == holder:
+                holder = q.get_nowait()
+                if q.empty():
+                    holder = users
+                print(users + " " + holder)
+                
+            users = holder
 
-def get_channels():
-    return 0
-
-async def cocks():
-    print("ochin")
-    print(repr(users))
-
-@client.event
-async def on_message(message):
-    if message.content.startswith("!test"):
-        await client.send_message(message.channel, "pong")
-        await cocks()
+    @client.event
+    async def on_message(message):
+        if message.content.startswith("!test"):
+            await getUsers()
+            print(users)
+            await client.send_message(message.channel, "Users: " + ", ".join(users))
+    
+    client.run(botToken)
 
 q = Queue() #HURRRRR XD
-p1 = Process(target=client.run, args=(botToken,))
+p1 = Process(target=shootme, args=(botToken,q,))
 p2 = Process(target=ircmain, args=(q,))
 p1.start()
 p2.start()
 
-print(q.get())
 
 while 2:
     pass
+    #print(q.get())
