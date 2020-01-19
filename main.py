@@ -29,13 +29,11 @@ class TestBot(irc.bot.SingleServerIRCBot):
         c.join(self.channel)
 
     def on_join(self, c, e):
-        print("Twatty cakes")
         for chname, chobj in self.channels.items():
             users = sorted(chobj.users())
             self.qq.put(users)
 
     def on_quit(self, c, e):
-        print("Cuntzilla")
         for chname, chobj in self.channels.items():
             users = sorted(chobj.users())
             self.qq.put(users)
@@ -48,12 +46,6 @@ class TestBot(irc.bot.SingleServerIRCBot):
 
 def ircmain(qhue):
     import sys
-
-    #if len(sys.argv) != 4:
-        #print("Usage: testbot <server[:port]> <channel> <nickname>")
-        #sys.exit(1)
-
-    #s = sys.argv[1].split(":", 1)
 
     server = config["IRC"]["server"]
     try:
@@ -92,9 +84,6 @@ def shootme(botToken,q):
             return blob
         else:
             holder = q.get_nowait()
-            if q.empty():
-            print(blob)
-            print(str(holder) + " vs " + str(blob))
             while (blob == holder) and not(q.empty()):
                 holder = q.get_nowait()
             blob = holder
@@ -114,8 +103,3 @@ p1 = Process(target=shootme, args=(botToken,q,))
 p2 = Process(target=ircmain, args=(q,))
 p1.start()
 p2.start()
-
-
-while 2:
-    pass
-    #print(q.get())
