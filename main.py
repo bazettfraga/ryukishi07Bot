@@ -40,70 +40,10 @@ class TestBot(irc.bot.SingleServerIRCBot):
             users = sorted(chobj.users())
             self.qq.put(users)
 
-    def on_privmsg(self, c, e):
-        self.do_command(e, e.arguments[0])
-        print(str(e))
-        print(str(e.arguments[0]))
-
     def on_pubmsg(self, c, e):
         for chname, chobj in self.channels.items():
             users = sorted(chobj.users())
             self.qq.put(users)
-        a = e.arguments[0].split(":", 1)
-        if len(a) > 1 and irc.strings.lower(a[0]) == irc.strings.lower(
-            self.connection.get_nickname()
-        ):
-            self.do_command(e, a[1].strip())
-        return
-
-    def on_dccmsg(self, c, e):
-        # non-chat DCC messages are raw bytes; decode as text
-        w
-        text = e.arguments[0].decode('utf-8')
-        c.privmsg("You said: " + text)
-
-    def on_dccchat(self, c, e):
-        if len(e.arguments) != 2:
-            return
-        args = e.arguments[1].split()
-        if len(args) == 4:
-            try:
-                address = ip_numstr_to_quad(args[2])
-                port = int(args[3])
-            except ValueError:
-                return
-            self.dcc_connect(address, port)
-
-    def do_command(self, e, cmd):
-        nick = e.source.nick
-        c = self.connection
-        print(str(self))
-        if cmd == "disconnect":
-            self.disconnect()
-        elif cmd == "die":
-            self.die() #me_irl
-        elif cmd == "stats":
-            for chname, chobj in self.channels.items():
-                #c.notice(nick, "--- Channel statistics ---")
-                #c.notice(nick, "Channel: " + chname)
-                users = sorted(chobj.users())
-                c.notice(nick, "Users: " + ", ".join(users))
-                print(repr(users))
-                opers = sorted(chobj.opers()) #if rena cares
-                c.notice(nick, "Opers: " + ", ".join(opers))
-                print(repr(opers))
-                #voiced = sorted(chobj.voiced())
-                #c.notice(nick, "Voiced: " + ", ".join(voiced))
-        elif cmd == "dcc":
-            dcc = self.dcc_listen()
-            c.ctcp(
-                "DCC",
-                nick,
-                "CHAT chat %s %d"
-                % (ip_quad_to_numstr(dcc.localaddress), dcc.localport),
-            )
-        else:
-            c.notice(nick, "Not understood: " + cmd)
 
 
 def ircmain(qhue):
@@ -137,7 +77,6 @@ def shootme(botToken,q):
         print('------')
     
     blob = q.get()
-    print(blob)
 
     async def getUsers():
         global blob
@@ -150,17 +89,13 @@ def shootme(botToken,q):
     async def checkUsers(users):
         global blob
         if q.empty():
-            print("Works")
             return blob
         else:
-            print("FUCK MY ASS")
             holder = q.get_nowait()
             if q.empty():
-                print("sense")
             print(blob)
             print(str(holder) + " vs " + str(blob))
             while (blob == holder) and not(q.empty()):
-                print("Loopity")
                 holder = q.get_nowait()
             blob = holder
             return blob
@@ -170,7 +105,6 @@ def shootme(botToken,q):
         if message.content == "hau!":
             users = await getUsers()
             users = await checkUsers(users)
-            #print(users)
             await client.send_message(message.channel, "Users: " + ", ".join(users))
     
     client.run(botToken)
