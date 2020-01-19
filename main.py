@@ -58,6 +58,7 @@ class TestBot(irc.bot.SingleServerIRCBot):
 
     def on_dccmsg(self, c, e):
         # non-chat DCC messages are raw bytes; decode as text
+        w
         text = e.arguments[0].decode('utf-8')
         c.privmsg("You said: " + text)
 
@@ -127,36 +128,49 @@ def ircmain(qhue):
     bot.start()
 
 def shootme(botToken,q):
-    global users
-    global holder
+    
     @client.event
     async def on_ready():
         print('Logged in as')
         print(client.user.name)
         print(client.user.id)
         print('------')
-        
+    
+    blob = q.get()
+    print(blob)
 
     async def getUsers():
+        global blob
         if q.empty():
-            print("FUCK YOU, NIGGER")
-            return users
+            return blob
+        else:
+            blob = q.get_nowait()
+            return blob
+
+    async def checkUsers(users):
+        global blob
+        if q.empty():
+            print("Works")
+            return blob
         else:
             print("FUCK MY ASS")
-            users  = q.get_nowait()
-            while users == holder:
+            holder = q.get_nowait()
+            if q.empty():
+                print("sense")
+            print(blob)
+            print(str(holder) + " vs " + str(blob))
+            while (blob == holder) and not(q.empty()):
+                print("Loopity")
                 holder = q.get_nowait()
-                if q.empty():
-                    holder = users
-                print(users + " " + holder)
-                
-            users = holder
+            blob = holder
+            return blob
 
     @client.event
     async def on_message(message):
-        if message.content.startswith("!test"):
-            await getUsers()
-            print(users)
+        if message.content == "hau!":
+            users = await getUsers()
+            users = await checkUsers(users)
+            #print(users)
             await client.send_message(message.channel, "Users: " + ", ".join(users))
     
     client.run(botToken)
