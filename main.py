@@ -83,18 +83,17 @@ def shootme(botToken,q):
         if q.empty():
             return blob
         else:
-            holder = q.get_nowait()
-            while (blob == holder) and not(q.empty()):
+            while not(q.empty()):
                 holder = q.get_nowait()
             blob = holder
             return blob
 
     @client.event
     async def on_message(message):
-        if message.content == "hau!":
+        if message.content.lower() == "hau!":
             users = await getUsers()
             users = await checkUsers(users)
-            await client.send_message(message.channel, "Users: " + ", ".join(users))
+            await client.send_message(message.channel, "These Wonderlanders are currently online: " + ", ".join(users))
     
     client.run(botToken)
 
