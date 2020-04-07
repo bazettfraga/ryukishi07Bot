@@ -32,7 +32,7 @@ class TestBot(irc.bot.SingleServerIRCBot):
         for chname, chobj in self.channels.items():
             users = sorted(chobj.users())
             self.qq.put(users)
-
+    
     def on_quit(self, c, e):
         for chname, chobj in self.channels.items():
             users = sorted(chobj.users())
@@ -68,8 +68,9 @@ def shootme(botToken,q):
         print(client.user.id)
         print('------')
     
-    blob = q.get()
 
+    
+    blob = q.get()
     async def getUsers():
         global blob
         if q.empty():
@@ -83,7 +84,8 @@ def shootme(botToken,q):
         if q.empty():
             return blob
         else:
-            while not(q.empty()):
+            holder = q.get_nowait()
+            while (blob == holder) and not(q.empty()):
                 holder = q.get_nowait()
             blob = holder
             return blob
@@ -93,8 +95,14 @@ def shootme(botToken,q):
         if message.content.lower() == "hau!":
             users = await getUsers()
             users = await checkUsers(users)
-            await client.send_message(message.channel, "These Wonderlanders are currently online: " + ", ".join(users))
+            await message.channel.send("These Wonderlanders are currently online: " + ", ".join(users))
     
+    while True:
+            try:
+                client.loop.run_until_complete(client.start(botToken))
+            except BaseException:
+                time.sleep(5)
+
     client.run(botToken)
 
 q = Queue() #HURRRRR XD
